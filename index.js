@@ -38,7 +38,7 @@ module.exports = function CircularBuffer(opts) {
 
 	opts = opts || {};
 	opts.encoding = opts.encoding || 'utf8';
-	opts.size = opts.size || 1024;
+	opts.size = opts.size || 512;
 
 	var size = opts.size;
 	var buffer = new Buffer(size);

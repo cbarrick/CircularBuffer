@@ -7,7 +7,7 @@
   "bugs": "https://github.com/cbarrick/CircularBuffer/issues",
   "repository": "https://github.com/cbarrick/CircularBuffer.git",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/.bin/mocha specs -R spec"
   },
   "keywords": [
     "circular",
@@ -15,5 +15,10 @@
     "stream"
   ],
   "author": "Chris Barrick <cbarrick1@gmail.com>",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "buffertools": "^2.1.2",
+    "chai": "^1.9.1",
+    "mocha": "^1.20.1"
+  }
 }
