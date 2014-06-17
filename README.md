@@ -4,6 +4,8 @@ A circular buffer for Node.js with a stream-like read/write interface. For a ful
 interface built on CircularBuffer, see [BufferedStream][].
 [BufferedStream]: #TODO
 
+> Tests are coming in the next few days
+
 
 API
 --------------------------------------------------
