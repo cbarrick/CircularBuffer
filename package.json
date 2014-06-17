@@ -1,0 +1,16 @@
+{
+  "name": "circular-buffer",
+  "version": "0.0.0",
+  "description": "A streaming circular buffer",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "circular",
+    "buffer",
+    "stream"
+  ],
+  "author": "Chris Barrick <cbarrick1@gmail.com>",
+  "license": "ISC"
+}
