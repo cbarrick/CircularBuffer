@@ -107,7 +107,7 @@ module.exports = function CircularBuffer(opts) {
 
 	/// CircularBuffer#peek([n], [encoding])
 	/// --------------------------------------------------
-	/// Retreive the first `n` bytes as a string or buffer.
+	/// Retrieve the first `n` bytes as a string or buffer.
 	///
 	/// ### Arguments
 	/// - `n` *(Number)*: The maximum number of bytes to retreive. Defaults to `Infinity`.
@@ -147,7 +147,7 @@ module.exports = function CircularBuffer(opts) {
 	/// Consumes the first `n` bytes of the buffer.
 	///
 	/// ### Arguments
-	/// - `n` *(Number)*: The maximum number of bytes to retreive. Defaults to `Infinity`.
+	/// - `n` *(Number)*: The maximum number of bytes to retrieve. Defaults to `Infinity`.
 	/// - `encoding` *(String)*: The encoding to use when decoding the bytes into a string.
 	///     If you pass the string `"buffer"`, then the data is not decoded and a buffer is
 	///     returned instead.
