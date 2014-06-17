@@ -40,7 +40,7 @@ Retrieve the first `n` bytes as a string or buffer.
 - `encoding` *(String)*: The encoding to use when decoding the bytes into a string. If you pass the string `"buffer"`, then the data is not decoded and a buffer is returned instead.
 
 #### Returns
-*(String | Buffer)* Returns a string representation of the first `n` bytes, or a buffer if `encoding` is `"buffer"`.
+*(String | Buffer)* Returns a string representation of the first `n` bytes or a buffer if `encoding` is `"buffer"`.
 
 
 -----
@@ -54,7 +54,7 @@ Consumes the first `n` bytes of the buffer.
 - `encoding` *(String)*: The encoding to use when decoding the bytes into a string. If you pass the string `"buffer"`, then the data is not decoded and a buffer is returned instead.
 
 #### Returns
-*(String | Buffer)* Returns a string representation of the first `n` bytes, or a buffer if `encoding` is `"buffer"`.
+*(String | Buffer)* Returns a string representation of the first `n` bytes or a buffer if `encoding` is `"buffer"`.
 
 -----
 
@@ -70,6 +70,24 @@ Copies data into a *regular* buffer. All arguments passed that are invalid or ou
 
 #### Returns
 *(Number)* Returns the number of bytes copied.
+
+-----
+
+### CircularBuffer#slice([start, [end]], [encoding])
+
+Returns a portion of the buffer from `start` to `end`. All arguments passed that are
+invalid or out of bounds are set to their defaults.
+
+#### Arguments
+- `start` *(Number)*: The starting index.
+- `end` *(Number)*: The end index.
+- `encoding` *(String)*: The encoding to use when decoding the bytes into a string.
+    If you pass the string `"buffer"`, then the data is not decoded and a buffer is
+    returned instead.
+
+#### Returns
+*(String | Buffer)* Returns a string representation of the slice or a buffer if `encoding`
+is `"buffer"`.
 
 -----
 

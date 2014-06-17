@@ -116,7 +116,7 @@ module.exports = function CircularBuffer(opts) {
 	///     returned instead.
 	///
 	/// ### Returns
-	/// *(String | Buffer)* Returns a string representation of the first `n` bytes,
+	/// *(String | Buffer)* Returns a string representation of the first `n` bytes
 	/// or a buffer if `encoding` is `"buffer"`.
 
 	this.peek = function peek(n, encoding) {
@@ -153,7 +153,7 @@ module.exports = function CircularBuffer(opts) {
 	///     returned instead.
 	///
 	/// ### Returns
-	/// *(String | Buffer)* Returns a string representation of the first `n` bytes,
+	/// *(String | Buffer)* Returns a string representation of the first `n` bytes
 	/// or a buffer if `encoding` is `"buffer"`.
 
 	this.read = function read(n, encoding) {
@@ -196,6 +196,43 @@ module.exports = function CircularBuffer(opts) {
 		}
 
 		return sourceEnd - sourceStart;
+	};
+
+
+	/// CircularBuffer#slice([start, [end]], [encoding])
+	/// --------------------------------------------------
+	/// Returns a portion of the buffer from `start` to `end`. All arguments passed that are
+	/// invalid or out of bounds are set to their defaults.
+	///
+	/// ### Arguments
+	/// - `start` *(Number)*: The starting index.
+	/// - `end` *(Number)*: The end index.
+	/// - `encoding` *(String)*: The encoding to use when decoding the bytes into a string.
+	///     If you pass the string `"buffer"`, then the data is not decoded and a buffer is
+	///     returned instead.
+	///
+	/// ### Returns
+	/// *(String | Buffer)* Returns a string representation of the slice or a buffer if `encoding`
+	/// is `"buffer"`.
+
+	this.slice = function slice(start, end, encoding) {
+		if (typeof arguments[0] === 'string') {
+			encoding = arguments[0];
+			start = undefined;
+			end = undefined;
+		} else if (typeof arguments[1] === 'string') {
+			encoding = arguments[1];
+			end = undefined;
+		}
+		start = inBounds(start) ? start : 0;
+		end = inBounds(end) ? end : this.length;
+		encoding = encoding || opts.encoding;
+
+		var newSize = end - start;
+		var newBuffer = new Buffer(newSize);
+		this.copy(newBuffer, 0, start, end);
+		if (encoding === 'buffer') return newBuffer;
+		return newBuffer.toString(encoding);
 	};
 
 
