@@ -1,5 +1,5 @@
 {
-  "name": "circular-buffer",
+  "name": "cbarrick-circular-buffer",
   "version": "1.2.3",
   "description": "A circular buffer for Node",
   "main": "index.js",
