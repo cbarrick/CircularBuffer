@@ -1,12 +1,21 @@
 CircularBuffer
 ==================================================
-A circular buffer for Node.js with a stream-like read/write interface. For a full stream
-interface built on CircularBuffer, see [BufferedStream][].
+A circular buffer for Node.js with a read/write interface. For a full stream interface built on CircularBuffer, see [BufferedStream][] (not yet complete).
 [BufferedStream]: #TODO
 
 
 API
 --------------------------------------------------
+
+```shell
+npm install circular-buffer --save
+```
+
+```javascript
+var CircularBuffer = require('circular-buffer');
+```
+
+-----
 
 ### new CircularBuffer([options])
 
@@ -65,8 +74,8 @@ Copies data into a *regular* buffer. All arguments passed that are invalid or ou
 #### Arguments
 - `targetBuffer` *(Buffer)*: Buffer into which data will be copied.
 - `targetStart` *(Number)*: The index into the target which will hold the first byte. Defaults to `0`.
-- `sourceStart` *(Number)*: The index of the first character to copy. Defaults to `0`.
-- `sourceEnd` *(Number)*: The index of the last character to copy. Defaults to `buffer.length`.
+- `sourceStart` *(Number)*: The starting index to copy (inclusize). Defaults to `0`.
+- `sourceEnd` *(Number)*: The end index to copy (exclusice). Defaults to `buffer.length`.
 
 #### Returns
 *(Number)* Returns the number of bytes copied.
@@ -79,8 +88,8 @@ Returns a portion of the buffer from `start` to `end`. All arguments passed that
 invalid or out of bounds are set to their defaults.
 
 #### Arguments
-- `start` *(Number)*: The starting index.
-- `end` *(Number)*: The end index.
+- `start` *(Number)*: The starting index of the slice (inclusive). Defaults to `0`.
+- `end` *(Number)*: The end index of the slice (exclusive). Defaults to `buffer.length`.
 - `encoding` *(String)*: The encoding to use when decoding the bytes into a string.
     If you pass the string `"buffer"`, then the data is not decoded and a buffer is
     returned instead.

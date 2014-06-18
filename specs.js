@@ -6,7 +6,7 @@ var buffertools = require('buffertools');
 var expect = require('chai').expect;
 
 
-// Add extra methods to the buffer prototype, namely `buffer.equals`
+// Add extra methods to the buffer prototype, namely `buffer#equals`
 buffertools.extend();
 
 

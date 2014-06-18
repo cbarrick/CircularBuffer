@@ -1,6 +1,6 @@
 {
   "name": "circular-buffer",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "A circular buffer for Node",
   "main": "index.js",
   "homepage": "https://github.com/cbarrick/CircularBuffer",
