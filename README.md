@@ -125,8 +125,10 @@ Writes to the end of the buffer.
 ### CircularBuffer#toString([encoding])
 
 Returns the contents of the buffer as a string.
+
 #### Arguments
 - `encoding` *(String)*: How to decode the data.
+
 #### Returns
 *(String)*: Always returns a string, unlike `CircularBuffer#peek`.
 
