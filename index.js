@@ -185,6 +185,8 @@ module.exports = function CircularBuffer(opts) {
 		sourceStart = inBounds(sourceStart) ? sourceStart : 0;
 		sourceEnd = inBounds(sourceEnd) ? sourceEnd : this.length;
 
+		if (sourceStart === sourceEnd) return 0;
+
 		var start = (head + sourceStart) % size;
 		var end = (head + sourceEnd) % size;
 		if (tail < head) {
