@@ -11,8 +11,7 @@
   },
   "keywords": [
     "circular",
-    "buffer",
-    "stream"
+    "buffer"
   ],
   "author": "Chris Barrick <cbarrick1@gmail.com>",
   "license": "ISC",
