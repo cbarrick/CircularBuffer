@@ -4,12 +4,24 @@ A circular buffer for Node.js with a read/write interface. For a full stream int
 [BufferedStream]: #TODO
 
 
-API
+Installation
 --------------------------------------------------
 
+The recommended method is to install the package from Github:
+
 ```shell
-npm install circular-buffer --save
+npm install 'cbarrick/CircularBuffer#v1.x' --save
 ```
+
+Alternatively, you can install the package from the npm registry, but be aware that the package name is different:
+
+```shell
+npm install 'cbarrick-circular-buffer' --save
+```
+
+
+API
+--------------------------------------------------
 
 ```javascript
 var CircularBuffer = require('circular-buffer');
