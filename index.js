@@ -44,7 +44,6 @@ module.exports = function CircularBuffer(opts) {
 	var buffer = new Buffer(size);
 	var head = 0;
 	var tail = 0;
-	var self = this;
 
 	buffer.fill(0);
 
@@ -53,9 +52,9 @@ module.exports = function CircularBuffer(opts) {
 	// --------------------------------------------------
 	// Checks that an index is a finite number, is greater than 0, and is less then the length.
 
-	function inBounds(n) {
-		return (Number.isFinite(n) && 0 <= n && n < self.length);
-	}
+	var inBounds = function inBounds(n) {
+		return (Number.isFinite(n) && 0 <= n && n < this.length);
+	}.bind(this);
 
 
 	// realign([newSize])
@@ -64,21 +63,21 @@ module.exports = function CircularBuffer(opts) {
 	// with the beginning of the new buffer. This method is used by `CircularBuffer#expand` and
 	// `CircularBuffer#shrink`.
 
-	function realign(newSize) {
+	var realign = function realign(newSize) {
 		if (newSize === undefined || newSize === null) newSize = size;
-		if (newSize < self.length) {
+		if (newSize < this.length) {
 			throw new Error('Realign size too small');
 		}
 
-		var newTail = self.length;
+		var newTail = this.length;
 		var newBuffer = new Buffer(newSize);
 		newBuffer.fill(0);
-		self.copy(newBuffer);
+		this.copy(newBuffer);
 		size = newSize;
 		buffer = newBuffer;
 		head = 0;
 		tail = newTail;
-	}
+	}.bind(this);
 
 
 	/// CircularBuffer#length
