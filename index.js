@@ -277,13 +277,12 @@ module.exports = function CircularBuffer(opts) {
 			return this.write(chunk, encoding);
 		}
 
-		var i = 0;
-		while (i < chunk.length) {
-			buffer[tail] = chunk[i];
-			i += 1;
-			tail += 1;
-			tail %= size;
-		}
+		// Write to the buffer using `memcpy`
+		var tmp = size - tail;
+		chunk.copy(buffer, tail, 0, tmp);
+		if (chunk.length > tmp) chunk.copy(buffer, 0, tmp, Infinity);
+		tail += chunk.length;
+		tail %= size;
 	};
 
 
