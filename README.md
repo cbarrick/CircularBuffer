@@ -1,7 +1,8 @@
 CircularBuffer
 ==================================================
-A circular buffer for Node.js with a read/write interface. For a full stream interface built on CircularBuffer, see [BufferedStream][] (not yet complete).
-[BufferedStream]: #TODO
+A circular buffer for Node.js with a read/write interface. For a full stream interface built on CircularBuffer, see [StreamBuffer][].
+
+[StreamBuffer]: https://github.com/cbarrick/StreamBuffer
 
 
 Installation
