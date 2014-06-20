@@ -40,6 +40,8 @@ module.exports = function CircularBuffer(opts) {
 	opts.encoding = opts.encoding || 'utf8';
 	opts.size = opts.size || 512;
 
+	validateEncoding(opts.encoding);
+
 	var size = opts.size;
 	var buffer = new Buffer(size);
 	var head = 0;
@@ -78,6 +80,17 @@ module.exports = function CircularBuffer(opts) {
 		buffer = newBuffer;
 		head = 0;
 		tail = newTail;
+	}
+
+
+	// validateEncoding(encoding)
+	// --------------------------------------------------
+	// Returns `true` if `encoding` is a known encoding or the string `"buffer"`. Otherwise throws
+	// a TypeError, like when the Buffer class sees an unknown encoding.
+
+	function validateEncoding(encoding) {
+		if (encoding === 'buffer' || Buffer.isEncoding(encoding)) return true;
+		throw new TypeError('Unknown encoding: ' + encoding);
 	}
 
 
@@ -127,6 +140,8 @@ module.exports = function CircularBuffer(opts) {
 		if (encoding === undefined || encoding === null) encoding = opts.encoding;
 		if (n === undefined || n === null) n = Infinity;
 		if (n > this.length) n = this.length;
+
+		validateEncoding(encoding);
 
 		var data;
 		var end = (head + n) % size;
@@ -229,6 +244,8 @@ module.exports = function CircularBuffer(opts) {
 		end = inBounds(end) ? end : this.length;
 		encoding = encoding || opts.encoding;
 
+		validateEncoding(encoding);
+
 		var newSize = end - start;
 		var newBuffer = new Buffer(newSize);
 		this.copy(newBuffer, 0, start, end);
@@ -267,10 +284,17 @@ module.exports = function CircularBuffer(opts) {
 	/// ### Arguments
 	/// - `chunk` *(String | Buffer)*: The data to be written.
 	/// - `encoding` *(String)*: If `chunk` is a string, how it should be encoded on the buffer.
+	///     If `chunk` is a buffer, this is ignored. Note that unlike the other methods, the string
+	///     `"buffer"` is not a valid encoding. If you set "buffer" as the default encoding, then
+	///     you must specify an encoding when writing strings.
 
 	this.write = function write(chunk, encoding) {
 		encoding = encoding || opts.encoding;
-		if (typeof chunk === 'string') chunk = new Buffer(chunk, encoding);
+
+		if (typeof chunk === 'string') {
+			// Cast `chunk` to a Buffer. The encoding is validated by the `Buffer` constructor.
+			chunk = new Buffer(chunk, encoding);
+		}
 
 		if (this.length + chunk.length >= size) {
 			this.expand();

@@ -130,7 +130,7 @@ Writes to the end of the buffer.
 
 #### Arguments
 - `chunk` *(String | Buffer)*: The data to be written.
-- `encoding` *(String)*: If `chunk` is a string, how it should be encoded on the buffer.
+- `encoding` *(String)*: If `chunk` is a string, how it should be encoded on the buffer. If `chunk` is a buffer, this is ignored. Note that unlike the other methods, the string `"buffer"` is not a valid encoding. If you set "buffer" as the default encoding, then you must specify an encoding when writing strings.
 
 -----
 
