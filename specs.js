@@ -251,4 +251,30 @@ describe('CircularBuffer', function () {
 		});
 	});
 
+
+	describe('#writeBack(chunk, [encoding])', function () {
+		it('accepts strings', function () {
+			var buffer = new CircularBuffer({size:6});    // -> [.|______]
+			expect(buffer.length).to.equal(0);            //
+			expect(buffer.peek()).to.equal('');           //
+			buffer.writeBack('bar');                      // -> [|___.bar]
+			expect(buffer.peek()).to.equal('bar');        //
+			buffer.writeBack('foo');                      // -> [|.foobar]
+			expect(buffer.peek()).to.equal('foobar');     //
+		});
+
+		it('accepts buffers', function () {
+			var buffer = new CircularBuffer({size:6});    // -> [.|______]
+			var toBeWritten;                              //
+			expect(buffer.length).to.equal(0);            //
+			expect(buffer.peek()).to.equal('');           //
+			toBeWritten = new Buffer('bar');              //
+			buffer.writeBack(toBeWritten);                // -> [|___.bar]
+			expect(buffer.peek()).to.equal('bar');        //
+			toBeWritten = new Buffer('foo');              //
+			buffer.writeBack(toBeWritten);                // -> [|.foobar]
+			expect(buffer.peek()).to.equal('foobar');     //
+		});
+	});
+
 });

@@ -308,6 +308,39 @@ module.exports = function CircularBuffer(opts) {
 	};
 
 
+	/// CircularBuffer#writeBack(chunk, [encoding])
+	/// --------------------------------------------------
+	/// Writes to the beginning of the buffer.
+	///
+	/// ### Arguments
+	/// - `chunk` *(String | Buffer)*: The data to be written.
+	/// - `encoding` *(String)*: If `chunk` is a string, how it should be encoded on the buffer.
+	///     If `chunk` is a buffer, this is ignored. If the encoding is `null`, utf8 is used.
+	///     The default is set by the constructor.
+
+	this.writeBack = function writeBack(chunk, encoding) {
+		encoding = encoding || opts.encoding || 'utf8';
+
+		if (typeof chunk === 'string') {
+			// Cast `chunk` to a Buffer. The encoding is validated by the `Buffer` constructor.
+			chunk = new Buffer(chunk, encoding);
+		}
+
+		if (this.length + chunk.length >= buffer.length) {
+			this.expand();
+			return this.writeBack(chunk, encoding);
+		}
+
+		// Write to the buffer using `memcpy`
+		head -= chunk.length;
+		head += buffer.length; // So that we can do a true mod
+		head %= buffer.length;
+		var tmp = buffer.length - head;
+		chunk.copy(buffer, head, 0, tmp);
+		if (chunk.length > tmp) chunk.copy(buffer, 0, tmp, Infinity);
+	};
+
+
 	/// CircularBuffer#toString([encoding])
 	/// --------------------------------------------------
 	/// Returns the contents of the buffer as a string.
