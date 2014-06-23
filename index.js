@@ -246,10 +246,10 @@ module.exports = function CircularBuffer(opts) {
 		validateEncoding(encoding);
 
 		var newSize = end - start;
-		var newBuffer = new Buffer(newSize);
-		this.copy(newBuffer, 0, start, end);
-		if (encoding === null) return newBuffer;
-		return newBuffer.toString(encoding);
+		var tmp = this.read(start, encoding);
+		var data = this.peek(newSize, encoding);
+		this.writeBack(tmp);
+		return data;
 	};
 
 
