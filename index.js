@@ -42,13 +42,13 @@ module.exports = function CircularBuffer(opts) {
 
 	validateEncoding(opts.encoding);
 
-	var size = opts.size;
-	var buffer = new Buffer(size);
+	var buffer;
+
 	var head = 0;
 	var tail = 0;
 	var self = this;
 
-	buffer.fill(0);
+	setBuffer(opts.size);
 
 
 	// inBounds(n)
@@ -60,26 +60,18 @@ module.exports = function CircularBuffer(opts) {
 	}
 
 
-	// realign([newSize])
+	// setBuffer(newSize)
 	// --------------------------------------------------
-	// Moves the data into a new buffer of size `newSize`, aligning the first byte of data
-	// with the beginning of the new buffer. This method is used by `CircularBuffer#expand` and
-	// `CircularBuffer#shrink`.
+	//
 
-	function realign(newSize) {
-		if (newSize === undefined || newSize === null) newSize = size;
-		if (newSize < self.length) {
-			throw new Error('Realign size too small');
-		}
-
-		var newTail = self.length;
-		var newBuffer = new Buffer(newSize);
+	function setBuffer(newSize) {
+		// Add 1 byte of padding to the buffer to make the overall implementation easier
+		var newBuffer = new Buffer(newSize + 1);
 		newBuffer.fill(0);
-		self.copy(newBuffer);
-		size = newSize;
+		if (buffer instanceof Buffer) self.copy(newBuffer);
 		buffer = newBuffer;
 		head = 0;
-		tail = newTail;
+		tail = self.length || 0;
 	}
 
 
@@ -100,7 +92,7 @@ module.exports = function CircularBuffer(opts) {
 
 	Object.defineProperty(this, 'length', {
 		get: function length() {
-			if (tail < head) return size - head + tail;
+			if (tail < head) return buffer.length - head + tail;
 			return tail - head;
 		}
 	});
@@ -113,7 +105,8 @@ module.exports = function CircularBuffer(opts) {
 
 	Object.defineProperty(this, 'size', {
 		get: function length() {
-			return size;
+			// Do not include the 1 byte of padding
+			return buffer.length - 1;
 		}
 	});
 
@@ -144,9 +137,9 @@ module.exports = function CircularBuffer(opts) {
 		validateEncoding(encoding);
 
 		var data;
-		var end = (head + n) % size;
+		var end = (head + n) % buffer.length;
 		if (end < head) {
-			data = Buffer.concat([buffer.slice(head, size), buffer.slice(0, end)], n);
+			data = Buffer.concat([buffer.slice(head, buffer.length), buffer.slice(0, end)], n);
 		} else {
 			// The buffer returned by `buffer.slice` shares memory with the original.
 			// We concat with an empty buffer to create a new buffer elsewhere in memory.
@@ -174,7 +167,7 @@ module.exports = function CircularBuffer(opts) {
 	this.read = function read(n, encoding) {
 		var data = this.peek(n, encoding);
 		head += data.length;
-		head %= size;
+		head %= buffer.length;
 		return data;
 	};
 
@@ -201,8 +194,8 @@ module.exports = function CircularBuffer(opts) {
 
 		if (sourceStart === sourceEnd) return 0;
 
-		var start = (head + sourceStart) % size;
-		var end = (head + sourceEnd) % size;
+		var start = (head + sourceStart) % buffer.length;
+		var end = (head + sourceEnd) % buffer.length;
 		if (tail < head) {
 			var available = head - tail;
 			buffer.copy(targetBuffer, targetStart, start, start + available);
@@ -260,7 +253,7 @@ module.exports = function CircularBuffer(opts) {
 	/// buffer is full. There are very few cases when you should call this manually.
 
 	this.expand = function expand() {
-		realign(size * 2);
+		setBuffer(this.size * 2);
 	};
 
 
@@ -273,7 +266,7 @@ module.exports = function CircularBuffer(opts) {
 	this.shrink = function shrink() {
 		var newSize = opts.size;
 		while (newSize < this.length) newSize += opts.size;
-		realign(newSize);
+		setBuffer(newSize);
 	};
 
 
@@ -296,17 +289,17 @@ module.exports = function CircularBuffer(opts) {
 			chunk = new Buffer(chunk, encoding);
 		}
 
-		if (this.length + chunk.length >= size) {
+		if (this.length + chunk.length >= buffer.length) {
 			this.expand();
 			return this.write(chunk, encoding);
 		}
 
 		// Write to the buffer using `memcpy`
-		var tmp = size - tail;
+		var tmp = buffer.length - tail;
 		chunk.copy(buffer, tail, 0, tmp);
 		if (chunk.length > tmp) chunk.copy(buffer, 0, tmp, Infinity);
 		tail += chunk.length;
-		tail %= size;
+		tail %= buffer.length;
 	};
 
 
