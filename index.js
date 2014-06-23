@@ -31,14 +31,17 @@
 /// ### Arguments
 /// - `options` *(Object)*:
 ///     - `size` *(Number)*: The initial size of the buffer in bytes. Defaults to 1024.
-///     - `encoding` *(String)*: The default encoding to use when converting to/from strings.
-///         Defaults to `"utf8"`.
+///     - `encoding` *(String | null)*: The default encoding to use to when converting to/from
+///         strings. If you pass `null` or `"buffer"`, then methods which access data will return
+///         buffers of octets. Defaults to `"utf8"`.
 
 module.exports = function CircularBuffer(opts) {
 
 	opts = opts || {};
 	opts.encoding = opts.encoding || 'utf8';
 	opts.size = opts.size || 512;
+
+	if (opts.encoding === 'buffer') opts.encoding = null;
 
 	validateEncoding(opts.encoding);
 
@@ -77,11 +80,13 @@ module.exports = function CircularBuffer(opts) {
 
 	// validateEncoding(encoding)
 	// --------------------------------------------------
-	// Returns `true` if `encoding` is a known encoding or the string `"buffer"`. Otherwise throws
-	// a TypeError, like when the Buffer class sees an unknown encoding.
+	// Returns `true` if `encoding` is a known encoding or `null`. Otherwise throws a TypeError,
+	// like when the Buffer class sees an unknown encoding.
 
 	function validateEncoding(encoding) {
-		if (encoding === 'buffer' || Buffer.isEncoding(encoding)) return true;
+		if (encoding === null || encoding === 'buffer' || Buffer.isEncoding(encoding)) {
+			return true;
+		}
 		throw new TypeError('Unknown encoding: ' + encoding);
 	}
 
@@ -117,20 +122,21 @@ module.exports = function CircularBuffer(opts) {
 	///
 	/// ### Arguments
 	/// - `n` *(Number)*: The maximum number of bytes to retreive. Defaults to `Infinity`.
-	/// - `encoding` *(String)*: The encoding to use when decoding the bytes into a string.
-	///     If you pass the string `"buffer"`, then the data is not decoded and a buffer is
-	///     returned instead.
+	/// - `encoding` *(String | null)*: The encoding to use to decode the bytes into a string.
+	///     If you pass `null` or `"buffer"`, the data will not be decoded and a buffer will be
+	///     returned instead. The default is set by the constructor.
 	///
 	/// ### Returns
-	/// *(String | Buffer)* Returns a string representation of the first `n` bytes
-	/// or a buffer if `encoding` is `"buffer"`.
+	/// *(String | Buffer)* Returns the first `n` bytes as a string or a buffer if the encoding
+	/// is null.
 
 	this.peek = function peek(n, encoding) {
 		if (typeof arguments[0] === 'string') {
 			n = undefined;
 			encoding = arguments[0];
 		}
-		if (encoding === undefined || encoding === null) encoding = opts.encoding;
+		if (encoding === undefined) encoding = opts.encoding;
+		if (encoding === 'buffer') encoding = null;
 		if (n === undefined || n === null) n = Infinity;
 		if (n > this.length) n = this.length;
 
@@ -145,7 +151,7 @@ module.exports = function CircularBuffer(opts) {
 			// We concat with an empty buffer to create a new buffer elsewhere in memory.
 			data = Buffer.concat([buffer.slice(head, end), new Buffer(0)], n);
 		}
-		if (encoding === 'buffer') return data;
+		if (encoding === null) return data;
 		return data.toString(encoding);
 	};
 
@@ -156,13 +162,13 @@ module.exports = function CircularBuffer(opts) {
 	///
 	/// ### Arguments
 	/// - `n` *(Number)*: The maximum number of bytes to retrieve. Defaults to `Infinity`.
-	/// - `encoding` *(String)*: The encoding to use when decoding the bytes into a string.
-	///     If you pass the string `"buffer"`, then the data is not decoded and a buffer is
-	///     returned instead.
+	/// - `encoding` *(String | null)*: The encoding to use to decode the bytes into a string.
+	///     If you pass `null`, the data will not be decoded and a buffer will be returned instead.
+	///     The default is set by the constructor.
 	///
 	/// ### Returns
-	/// *(String | Buffer)* Returns a string representation of the first `n` bytes
-	/// or a buffer if `encoding` is `"buffer"`.
+	/// *(String | Buffer)* Returns the first `n` bytes as a string or a buffer if the encoding
+	/// is null.
 
 	this.read = function read(n, encoding) {
 		var data = this.peek(n, encoding);
@@ -216,13 +222,12 @@ module.exports = function CircularBuffer(opts) {
 	/// ### Arguments
 	/// - `start` *(Number)*: The starting index of the slice (inclusive). Defaults to `0`.
 	/// - `end` *(Number)*: The end index of the slice (exclusive). Defaults to `buffer.length`.
-	/// - `encoding` *(String)*: The encoding to use when decoding the bytes into a string.
-	///     If you pass the string `"buffer"`, then the data is not decoded and a buffer is
-	///     returned instead.
+	/// - `encoding` *(String | null)*: The encoding to use to decode the bytes into a string.
+	///     If you pass `null`, the data will not be decoded and a buffer will be returned instead.
+	///     The default is set by the constructor.
 	///
 	/// ### Returns
-	/// *(String | Buffer)* Returns a string representation of the slice or a buffer if `encoding`
-	/// is `"buffer"`.
+	/// *(String | Buffer)* Returns the slice as a string or a buffer if the encoding is null.
 
 	this.slice = function slice(start, end, encoding) {
 		if (typeof arguments[0] === 'string') {
@@ -233,16 +238,17 @@ module.exports = function CircularBuffer(opts) {
 			encoding = arguments[1];
 			end = undefined;
 		}
-		start = inBounds(start) ? start : 0;
-		end = inBounds(end) ? end : this.length;
-		encoding = encoding || opts.encoding;
+		if (!inBounds(start)) start = 0;
+		if (!inBounds(end)) end = this.length;
+		if (encoding === undefined) encoding = opts.encoding;
+		if (encoding === 'buffer') encoding = null;
 
 		validateEncoding(encoding);
 
 		var newSize = end - start;
 		var newBuffer = new Buffer(newSize);
 		this.copy(newBuffer, 0, start, end);
-		if (encoding === 'buffer') return newBuffer;
+		if (encoding === null) return newBuffer;
 		return newBuffer.toString(encoding);
 	};
 
@@ -277,12 +283,11 @@ module.exports = function CircularBuffer(opts) {
 	/// ### Arguments
 	/// - `chunk` *(String | Buffer)*: The data to be written.
 	/// - `encoding` *(String)*: If `chunk` is a string, how it should be encoded on the buffer.
-	///     If `chunk` is a buffer, this is ignored. Note that unlike the other methods, the string
-	///     `"buffer"` is not a valid encoding. If you set "buffer" as the default encoding, then
-	///     you must specify an encoding when writing strings.
+	///     If `chunk` is a buffer, this is ignored. If the encoding is `null`, utf8 is used.
+	///     The default is set by the constructor.
 
 	this.write = function write(chunk, encoding) {
-		encoding = encoding || opts.encoding;
+		encoding = encoding || opts.encoding || 'utf8';
 
 		if (typeof chunk === 'string') {
 			// Cast `chunk` to a Buffer. The encoding is validated by the `Buffer` constructor.
