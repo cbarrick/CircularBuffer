@@ -55,7 +55,7 @@ The number of bytes allocated for the buffer. Note that this is ***not*** the si
 
 ### CircularBuffer#peek([n], [encoding])
 
-Retrieve the first `n` bytes as a string or buffer.
+Retrieve the first `n` bytes of the buffer. If the result would be decoded, partial characters are not returned.
 
 #### Arguments
 - `n` *(Number)*: The maximum number of bytes to retreive. Defaults to `Infinity`.
@@ -69,7 +69,7 @@ Retrieve the first `n` bytes as a string or buffer.
 
 ### CircularBuffer#read([n], [encoding])
 
-Consumes the first `n` bytes of the buffer.
+Consumes the first `n` bytes of the buffer. If the result would be decoded, partial characters are not read.
 
 #### Arguments
 - `n` *(Number)*: The maximum number of bytes to retrieve. Defaults to `Infinity`.
@@ -98,7 +98,7 @@ Copies data into a *regular* buffer. All arguments passed that are invalid or ou
 ### CircularBuffer#slice([start, [end]], [encoding])
 
 Returns a portion of the buffer from `start` to `end`. All arguments passed that are
-invalid or out of bounds are set to their defaults.
+invalid or out of bounds are set to their defaults. If the slice would be decoded and contains partial multibyte characters, the endpoints are rounded back to the beginning of the character.
 
 #### Arguments
 - `start` *(Number)*: The starting index of the slice (inclusive). Defaults to `0`.

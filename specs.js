@@ -106,6 +106,20 @@ describe('CircularBuffer', function () {
 			expect(first).to.equal('foo');                // Both peeks are the same because
 			expect(second).to.equal('foo');               // nothing was changed
 		});
+
+		it('is multibyte character safe', function () {
+			var buffer = new CircularBuffer({size:5, encoding:'utf8'});
+			buffer.write('€');                            // -> [.0xE2,0x82,0xAC,|0x__,0x__]
+			buffer.write('¢');                            // -> [.0xE2,0x82,0xAC,0xC2,0xA2|]
+
+			// Only peek bytes if `n` is big enough to read the full character.
+			// The euro symbol is 3 bytes and the cent symbol is 2 bytes.
+			expect(buffer.peek(1)).to.equal('');          // The euro symbol is 3 bytes long
+			expect(buffer.peek(2)).to.equal('');          // So it shouldn't be returned
+			expect(buffer.peek(3)).to.equal('€');         // Unless at least 3 bytes are seen
+			expect(buffer.peek(4)).to.equal('€');         // Same with the cent symbol
+			expect(buffer.peek(5)).to.equal('€¢');        // Which is 2 bytes long
+		});
 	});
 
 
@@ -135,6 +149,20 @@ describe('CircularBuffer', function () {
 			expect(buffer.length).to.equal(3);            //
 			buffer.read(3);                               // -> [___.|_]
 			expect(buffer.length).to.equal(0);            // The bytes are consumed on read
+		});
+
+		it('is multibyte character safe', function () {
+			var buffer = new CircularBuffer({size:5, encoding:'utf8'});
+			buffer.write('€');                            // -> [.0xE2,0x82,0xAC,|0x__,0x__]
+			buffer.write('¢');                            // -> [.0xE2,0x82,0xAC,0xC2,0xA2|]
+
+			// Only consume bytes if `n` is big enough to read the full character.
+			// The euro symbol is 3 bytes and the cent symbol is 2 bytes.
+			expect(buffer.read(1)).to.equal('');          // -> [.0xE2,0x82,0xAC,0xC2,0xA2|]
+			expect(buffer.read(2)).to.equal('');          // -> [.0xE2,0x82,0xAC,0xC2,0xA2|]
+			expect(buffer.read(3)).to.equal('€');         // -> [0x__,0x__,0x__,.0xC2,0xA2|]
+			expect(buffer.read(1)).to.equal('');          // -> [0x__,0x__,0x__,.0xC2,0xA2|]
+			expect(buffer.read(2)).to.equal('¢');         // -> [0x__,0x__,0x__,0x__,0x__.|]
 		});
 	});
 
@@ -185,6 +213,21 @@ describe('CircularBuffer', function () {
 			var world = buffer.slice(6, null, 'buffer');   //
 			expect(world).to.be.instanceof(Buffer);        //
 			expect(world.toString()).to.equal('world');    //
+		});
+
+		it('is multibyte character safe', function () {
+			var buffer = new CircularBuffer({size:5, encoding:'utf8'});
+			buffer.write('€');                            // -> [.0xE2,0x82,0xAC,|0x__,0x__]
+			buffer.write('¢');                            // -> [.0xE2,0x82,0xAC,0xC2,0xA2|]
+
+			// If `start` or `end` is in the middle of a multibyte character,
+			// round down to the start of that character.
+			// The euro symbol is 3 bytes and the cent symbol is 2 bytes.
+			expect(buffer.slice(0,1)).to.equal('');
+			expect(buffer.slice(0,2)).to.equal('');
+			expect(buffer.slice(0,3)).to.equal('€');
+			expect(buffer.slice(1,3)).to.equal('€');
+			expect(buffer.slice(2,3)).to.equal('€');
 		});
 	});
 

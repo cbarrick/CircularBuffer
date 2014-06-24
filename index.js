@@ -22,6 +22,7 @@
 
 
 'use strict';
+var StringDecoder = require('string_decoder').StringDecoder;
 
 
 /// new CircularBuffer([options])
@@ -91,6 +92,19 @@ module.exports = function CircularBuffer(opts) {
 	}
 
 
+	// decode(buffer, encoding)
+	// --------------------------------------------------
+
+	function decode(buffer, encoding) {
+		validateEncoding(encoding);
+		if (encoding === null || encoding === 'buffer') return [buffer, new Buffer(0)];
+		var decoder = new StringDecoder(encoding);
+		var str = decoder.write(buffer);
+		var leftover = decoder.charBuffer.slice(0, decoder.charReceived);
+		return [str, leftover];
+	}
+
+
 	/// CircularBuffer#length
 	/// --------------------------------------------------
 	/// The number of bytes stored in the buffer.
@@ -118,7 +132,8 @@ module.exports = function CircularBuffer(opts) {
 
 	/// CircularBuffer#peek([n], [encoding])
 	/// --------------------------------------------------
-	/// Retrieve the first `n` bytes as a string or buffer.
+	/// Retrieve the first `n` bytes of the buffer. If the result would be decoded, partial
+	/// characters are not returned.
 	///
 	/// ### Arguments
 	/// - `n` *(Number)*: The maximum number of bytes to retreive. Defaults to `Infinity`.
@@ -140,25 +155,32 @@ module.exports = function CircularBuffer(opts) {
 		if (n === undefined || n === null) n = Infinity;
 		if (n > this.length) n = this.length;
 
-		validateEncoding(encoding);
-
+		// Get the first `n` bytes
 		var data;
 		var end = (head + n) % buffer.length;
 		if (end < head) {
 			data = Buffer.concat([buffer.slice(head, buffer.length), buffer.slice(0, end)], n);
 		} else {
-			// The buffer returned by `buffer.slice` shares memory with the original.
-			// We concat with an empty buffer to create a new buffer elsewhere in memory.
-			data = Buffer.concat([buffer.slice(head, end), new Buffer(0)], n);
+			data = buffer.slice(head, end);
 		}
-		if (encoding === null) return data;
-		return data.toString(encoding);
+
+		// Don't decode if encoding is null or "buffer"
+		if (encoding === null) {
+			// The buffer returned by `buffer.slice` shares memory with the original.
+			// We concat with an empty buffer to copy it to unshared memory.
+			if (end >= head) data = Buffer.concat([data, new Buffer(0)], n);
+			return data;
+		}
+
+		// Decode the string without spliting multibyte characters
+		return decode(data, encoding)[0];
 	};
 
 
 	/// CircularBuffer#read([n], [encoding])
 	/// --------------------------------------------------
-	/// Consumes the first `n` bytes of the buffer.
+	/// Consumes the first `n` bytes of the buffer. If the result would be decoded, partial
+	/// characters are not read.
 	///
 	/// ### Arguments
 	/// - `n` *(Number)*: The maximum number of bytes to retrieve. Defaults to `Infinity`.
@@ -171,10 +193,19 @@ module.exports = function CircularBuffer(opts) {
 	/// is null.
 
 	this.read = function read(n, encoding) {
-		var data = this.peek(n, encoding);
-		head += data.length;
+		if (typeof arguments[0] === 'string') {
+			n = undefined;
+			encoding = arguments[0];
+		}
+		if (encoding === undefined) encoding = opts.encoding;
+		if (encoding === 'buffer') encoding = null;
+
+		var data = this.peek(n, 'buffer');
+		var decoded = decode(data, encoding);
+		var leftover = decoded[1];
+		head += data.length - leftover.length;
 		head %= buffer.length;
-		return data;
+		return decoded[0];
 	};
 
 
@@ -217,7 +248,9 @@ module.exports = function CircularBuffer(opts) {
 	/// CircularBuffer#slice([start, [end]], [encoding])
 	/// --------------------------------------------------
 	/// Returns a portion of the buffer from `start` to `end`. All arguments passed that are
-	/// invalid or out of bounds are set to their defaults.
+	/// invalid or out of bounds are set to their defaults. If the slice would be decoded and
+	/// contains partial multibyte characters, the endpoints are rounded back to the beginning
+	/// of the character.
 	///
 	/// ### Arguments
 	/// - `start` *(Number)*: The starting index of the slice (inclusive). Defaults to `0`.
@@ -243,12 +276,13 @@ module.exports = function CircularBuffer(opts) {
 		if (encoding === undefined) encoding = opts.encoding;
 		if (encoding === 'buffer') encoding = null;
 
-		validateEncoding(encoding);
-
-		var newSize = end - start;
-		var tmp = this.read(start, encoding);
-		var data = this.peek(newSize, encoding);
-		this.writeBack(tmp);
+		// We use read and peek here to take advantage of character saftey
+		// If we return a string, the first character is rounded back to the first safe byte
+		var initialHead = head;
+		this.read(start, encoding); // Seek to the first byte of the slice
+		start = head; // Round back to the first byte of a multibyte character
+		var data = this.peek(end - start, encoding);
+		head = initialHead; // Reset
 		return data;
 	};
 
