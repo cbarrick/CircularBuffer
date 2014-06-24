@@ -320,4 +320,17 @@ describe('CircularBuffer', function () {
 		});
 	});
 
+
+	describe('#getStream()', function () {
+		it('returns a stream interface for the buffer', function (callback) {
+			var stream1 = new CircularBuffer().getStream();
+			var stream2 = new CircularBuffer().getStream();
+			stream1.pipe(stream2);
+			stream1.write('hello', function () {
+				expect(stream2.read()).to.equal('hello');
+				process.nextTick(callback);
+			});
+		});
+	});
+
 });

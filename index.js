@@ -22,6 +22,8 @@
 
 
 'use strict';
+var assert = require('assert');
+var DuplexStream = require('stream').Duplex;
 var StringDecoder = require('string_decoder').StringDecoder;
 
 
@@ -372,6 +374,30 @@ module.exports = function CircularBuffer(opts) {
 		var tmp = buffer.length - head;
 		chunk.copy(buffer, head, 0, tmp);
 		if (chunk.length > tmp) chunk.copy(buffer, 0, tmp, Infinity);
+	};
+
+
+	/// CircularBuffer#getStream()
+	/// --------------------------------------------------
+	/// Returns a stream interface for the buffer.
+
+	this.getStream = function getStream() {
+		var encoding = opts.encoding;
+
+		var stream = new DuplexStream({encoding: encoding});
+
+		stream._read = function (n) {
+			var data = self.read(n, encoding);
+			stream.push(data, encoding);
+		};
+
+		stream._write = function (chunk, enc, callback) {
+			assert(enc === 'buffer');
+			self.write(chunk);
+			return callback();
+		};
+
+		return stream;
 	};
 
 

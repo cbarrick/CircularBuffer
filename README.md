@@ -1,8 +1,6 @@
 CircularBuffer
 ==================================================
-A circular buffer for Node.js with a read/write interface. For a full stream interface built on CircularBuffer, see [StreamBuffer][].
-
-[StreamBuffer]: https://github.com/cbarrick/StreamBuffer
+A circular buffer for Node.js with a simple read/write interface and <a href="#getStream">streaming support</a>.
 
 
 Installation
@@ -139,6 +137,13 @@ Writes to the beginning of the buffer.
 #### Arguments
 - `chunk` *(String | Buffer)*: The data to be written.
 - `encoding` *(String)*: If `chunk` is a string, how it should be encoded on the buffer. If `chunk` is a buffer, this is ignored. If the encoding is `null`, utf8 is used. The default is set by the constructor.
+
+-----
+
+<a name="getStream"></a>
+### CircularBuffer#getStream()
+
+Returns a stream interface for the buffer.
 
 -----
 

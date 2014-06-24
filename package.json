@@ -10,6 +10,8 @@
     "test": "./node_modules/.bin/mocha specs -R spec"
   },
   "keywords": [
+    "stream",
+    "streaming",
     "circular",
     "buffer"
   ],
