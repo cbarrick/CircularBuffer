@@ -132,6 +132,16 @@ Writes to the end of the buffer.
 
 -----
 
+### CircularBuffer#writeBack(chunk, [encoding])
+
+Writes to the beginning of the buffer.
+
+#### Arguments
+- `chunk` *(String | Buffer)*: The data to be written.
+- `encoding` *(String)*: If `chunk` is a string, how it should be encoded on the buffer. If `chunk` is a buffer, this is ignored. If the encoding is `null`, utf8 is used. The default is set by the constructor.
+
+-----
+
 ### CircularBuffer#toString([encoding])
 
 Returns the contents of the buffer as a string.
