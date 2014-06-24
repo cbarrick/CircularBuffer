@@ -143,7 +143,10 @@ Writes to the beginning of the buffer.
 <a name="getStream"></a>
 ### CircularBuffer#getStream()
 
-Returns a stream interface for the buffer.
+Creates a Duplex Stream (i.e. both readable and writeable) backed by the buffer.
+
+#### Returns
+*(Stream)* Returns a stream interface for the buffer.
 
 -----
 

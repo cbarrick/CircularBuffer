@@ -379,7 +379,10 @@ module.exports = function CircularBuffer(opts) {
 
 	/// CircularBuffer#getStream()
 	/// --------------------------------------------------
-	/// Returns a stream interface for the buffer.
+	/// Creates a Duplex Stream (i.e. both readable and writeable) backed by the buffer.
+	///
+	/// ### Returns
+	/// *(Stream)* Returns a stream interface for the buffer.
 
 	this.getStream = function getStream() {
 		var encoding = opts.encoding;
