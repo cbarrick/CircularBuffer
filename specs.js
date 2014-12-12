@@ -2,13 +2,19 @@
 
 /* global describe, it */
 var CircularBuffer = require('./');
-var buffertools = require('buffertools');
 var expect = require('chai').expect;
 
-
-// Add extra methods to the buffer prototype, namely `buffer#equals`
-buffertools.extend();
-
+function bufferEquals(lhs, rhs, offset1, offset2, size) {
+	if (offset1 === undefined && offset2 === undefined && size === undefined) {
+		if (lhs.length !== rhs.length) return false;
+	}
+	var slice1 = (offset1 === undefined && size === undefined) ? lhs : lhs.slice(offset1 || 0, size || lhs.length);
+	var slice2 = (offset2 === undefined && size === undefined) ? rhs : rhs.slice(offset2 || 0, size || rhs.length);
+	for (var idx = 0; idx < slice1.length; ++idx) {
+		if (slice1[idx] !== slice2[idx]) return false;
+	}
+	return true;
+}
 
 describe('CircularBuffer', function () {
 
@@ -45,12 +51,12 @@ describe('CircularBuffer', function () {
 			var buffer1 = new CircularBuffer();           // The default encoding is utf8
 			buffer1.write('test');                        //
 			var content1 = buffer1.peek('buffer');        //
-			expect(content1.equals(utf8));                //
+			expect(bufferEquals(content1, utf8));                //
 
 			var buffer2 = new CircularBuffer({encoding:'utf16le'});
 			buffer2.write('test');                        //
 			var content2 = buffer2.peek('buffer');        //
-			expect(content2.equals(utf16));               //
+			expect(bufferEquals(content2, utf16));               //
 		});
 	});
 
@@ -320,7 +326,6 @@ describe('CircularBuffer', function () {
 		});
 	});
 
-
 	describe('#getStream()', function () {
 		it('returns a stream interface for the buffer', function (callback) {
 			var stream1 = new CircularBuffer().getStream();
@@ -333,4 +338,12 @@ describe('CircularBuffer', function () {
 		});
 	});
 
+	it('should deal with read-then-expand', function() {
+		var buffer = new CircularBuffer({ size: 2, encoding: 'buffer' });
+		var buf = new Buffer([1,2,3,4]);
+		buffer.write(buf.slice(0, 2));
+		buffer.read(1);
+		buffer.write(buf.slice(2, 4));
+		expect(buf.slice(1, 4).toString('hex')).to.equal(buffer.toString('hex'));
+	});
 });
