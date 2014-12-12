@@ -78,7 +78,7 @@ module.exports = function CircularBuffer(opts) {
 		if (buffer instanceof Buffer) self.copy(newBuffer);
 		buffer = newBuffer;
 		head = 0;
-		tail = self.length || 0;
+		tail = oldLength || 0;
 	}
 
 
