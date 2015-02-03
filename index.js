@@ -72,12 +72,13 @@ module.exports = function CircularBuffer(opts) {
 
 	function setBuffer(newSize) {
 		// Add 1 byte of padding to the buffer to make the overall implementation easier
+		var oldLength = self.length;
 		var newBuffer = new Buffer(newSize + 1);
 		newBuffer.fill(0);
 		if (buffer instanceof Buffer) self.copy(newBuffer);
 		buffer = newBuffer;
 		head = 0;
-		tail = self.length || 0;
+		tail = oldLength || 0;
 	}
 
 
@@ -416,6 +417,7 @@ module.exports = function CircularBuffer(opts) {
 
 	this.toString = function toString(encoding) {
 		// The extra `toString` ensures that a string is returned even if `encoding === 'buffer'`.
+		if (encoding === 'hex') return this.peek(Infinity, 'buffer').toString('hex'); // Parity with Buffer.toString()
 		return this.peek(Infinity, encoding).toString();
 	};
 
