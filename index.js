@@ -339,7 +339,7 @@ module.exports = function CircularBuffer(opts) {
 		// Write to the buffer using `memcpy`
 		var tmp = buffer.length - tail;
 		chunk.copy(buffer, tail, 0, tmp);
-		if (chunk.length > tmp) chunk.copy(buffer, 0, tmp, Infinity);
+		if (chunk.length > tmp) chunk.copy(buffer, 0, tmp);
 		tail += chunk.length;
 		tail %= buffer.length;
 	};
@@ -374,7 +374,7 @@ module.exports = function CircularBuffer(opts) {
 		head %= buffer.length;
 		var tmp = buffer.length - head;
 		chunk.copy(buffer, head, 0, tmp);
-		if (chunk.length > tmp) chunk.copy(buffer, 0, tmp, Infinity);
+		if (chunk.length > tmp) chunk.copy(buffer, 0, tmp);
 	};
 
 
